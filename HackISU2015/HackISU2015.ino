@@ -18,19 +18,34 @@
 // initialize the library with the numbers of the interface pins
 //RS, E, D4, D5, D6, D7
 LiquidCrystal lcd(4,6, 10, 11, 12, 13);
+const int solenoidPin = 8;
+int count;
 
 void setup() {
   // set up the LCD's number of columns and rows: 
+  pinMode(solenoidPin, OUTPUT);
   lcd.begin(16, 2);
   // Print a message to the LCD.
-  lcd.print("The Diodes");
+  lcd.print("Who Do You Know?");
   delay(1000);
+  count = 0;
 }
 
 void loop() {
-  // scroll 13 positions (string length) to the left 
-  // to move it offscreen left:
-  for (int positionCounter = 0; positionCounter < 13; positionCounter++) {
+  /*soleunoid
+  digitalWrite(8, HIGH);
+  delay(10000);
+  digitalWrite(8, LOW);
+  delay(1000);
+  */
+  count++;
+ if (checkAccess()){
+  lcd.clear();
+  lcd.print("You're in!");
+  //lcd.print(count);
+  digitalWrite(solenoidPin, HIGH); //open solenoid
+  
+   for (int positionCounter = 0; positionCounter < 13; positionCounter++) {
     // scroll one position left:
     lcd.scrollDisplayLeft(); 
     // wait a bit:
@@ -54,8 +69,24 @@ void loop() {
     // wait a bit:
     delay(150);
   }
-  
+} 
+ else{
+   digitalWrite(solenoidPin, LOW);
+   lcd.clear();
+   lcd.print("Who Do You Know?");
+   delay(3000);
+}
   // delay at the end of the full loop:
-  delay(1000);
+  delay(500);
 
+}
+
+boolean checkAccess(){
+  //needs to be if camera scans the correct QR code
+  
+  if (count%5== 0)
+    return true; 
+    
+   else
+     return false;
 }
