@@ -33,74 +33,84 @@ EthernetClient client;
 //RS, E, D4, D5, D6, D7
 LiquidCrystal lcd(4,6, 10, 11, 12, 13);
 const int solenoidPin = 8;
+const int buttonPin = 3;
 int count;
 
 
 void setup() {
-  Serial.begin(9600);
-  
-   Ethernet.begin(mac, ip);
-   delay(1000);
-  Serial.println("connecting...");
-  
-   if (client.connect(server, 80)) {
-    Serial.println("connected");
-    // Make a HTTP request:
-    client.println("GET /search?q=arduino HTTP/1.1");
-    client.println("Host: www.google.com");
-    client.println("Connection: close");
-    client.println();
-  }
-  else {
-    // kf you didn't get a connection to the server:
-    Serial.println("connection failed");
-  }
-
-  
-  // set up the LCD's number of columns and rows: 
   pinMode(solenoidPin, OUTPUT);
+  // set up the LCD's number of columns and rows: 
   lcd.begin(16, 2);
   // Print a message to the LCD.
   lcd.print("Who Do You Know?");
-  delay(1000);
+  delay(2000);
   count = 0;
   
-  
+  //set up button
+  pinMode(2, OUTPUT);
+  pinMode(3, INPUT);
+  digitalWrite(2, HIGH);
   
 }
 
 void loop() {
-  /*soleunoid
-  digitalWrite(8, HIGH);
-  delay(10000);
-  digitalWrite(8, LOW);
-  delay(1000);
-  */
-  count++;
-  
-  // if there are incoming bytes available
-  // from the server, read them and print them:
-  if (client.available()) {
-    char c = client.read();
-    Serial.print(c);
-  }
-
-  // if the server's disconnected, stop the client:
-  if (!client.connected()) {
-    Serial.println();
-    Serial.println("disconnecting.");
-    client.stop();
-
-    // do nothing forevermore:
-    while (true);
-  }
- if (checkAccess()){
+ //check if button is pressed first
+ if (buttonPressed()){
+   
   lcd.clear();
-  lcd.print("You're in!");
-  //lcd.print(count);
-  digitalWrite(solenoidPin, HIGH); //open solenoid
+  lcd.print("Scan in a sec.");
+  delay(5000); //until accessGranted() is implemented
+  if(accessGranted()){
+    //welcome message & open door --> warning message: door will close soon --> close door
+    lcd.clear();
+    lcd.print("Come and party!!!");
+    digitalWrite(solenoidPin, HIGH); //unlock door
+    delay(10000); //leave the door unlocked for a bit
+    
+    lcd.clear();
+    lcd.print("Locking door...");
+    delay(10000);
+    digitalWrite(solenoidPin, LOW); //lock door
+    
+    lcd.clear();
+    lcd.print("Door is locked!");
+    delay(10000);
+   }
+   else{ //QR code denied
+      lcd.clear();
+      lcd.print("Sorry rando!");
+      delay(15000);
+   }
+  } 
   
-   for (int positionCounter = 0; positionCounter < 13; positionCounter++) {
+ else{ //button wasn't pressed
+   lcd.clear();
+   lcd.print("Press the button!");
+
+  }
+  
+  // delay at the end of the full loop:
+  delay(1000);
+}
+
+
+boolean buttonPressed(){
+  if(digitalRead(buttonPin) == HIGH){
+    return true;
+  }
+  else
+    return false;
+}
+
+//turn on server -> turn on webcam -> scan qr code 
+//get authentication
+//returns true if QR code scanned is correct
+boolean accessGranted(){
+  return true;
+}
+
+void scrollMessage(){
+  for (int positionCounter = 0; positionCounter < 13; positionCounter++) {
     // scroll one position left:
     lcd.scrollDisplayLeft(); 
     // wait a bit:
@@ -124,24 +134,4 @@ void loop() {
     // wait a bit:
     delay(150);
    }
-  } 
-  else{
-   digitalWrite(solenoidPin, LOW);
-   lcd.clear();
-   lcd.print("Who Do You Know?");
-   delay(3000);
-  }
-  // delay at the end of the full loop:
-  delay(500);
-
-}
-
-boolean checkAccess(){
-  //needs to be if camera scans the correct QR code
-  
-  if (count%5== 0)
-    return true; 
-    
-   else
-     return false;
 }
