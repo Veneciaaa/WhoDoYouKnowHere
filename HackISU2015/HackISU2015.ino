@@ -69,12 +69,12 @@ void loop() {
     
     lcd.clear();
     lcd.print("Locking door...");
-    delay(10000);
+    delay(5000);
     digitalWrite(solenoidPin, LOW); //lock door
     
     lcd.clear();
     lcd.print("Door is locked!");
-    delay(10000);
+    delay(5000);
    }
    else{ //QR code denied
       lcd.clear();
